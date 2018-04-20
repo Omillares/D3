@@ -1,3 +1,4 @@
+
 var svgWidth = 960;
 var svgHeight = 500;
 
@@ -22,13 +23,13 @@ var chart = svg.append("g");
 d3.select(".chart").append("div").attr("class", "tooltip").style("opacity", 0);
 
 
-d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
+d3.csv("eduData.csv", function(err, eduData) {
   if (err) throw err;
 
-  hairData.forEach(function(data) {
-    data.hair_length = +data.hair_length;
-    data.num_hits = +data.num_hits;
-    data.num_albums = +data.num_albums;
+  eduData.forEach(function(data) {
+    data.Sample_Size = +data.Sample_Size;
+    data.Data_value = +data.Data_value;
+    data.Display_order = +data.Display_order;
   });
 
 
@@ -46,22 +47,23 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
   var yMax;
 
 
+
   function findMinAndMax(dataColumnX) {
-    xMin = d3.min(hairData, function(data) {
+    xMin = d3.min(eduData, function(data) {
       return +data[dataColumnX] * 0.8;
     });
 
-    xMax = d3.max(hairData, function(data) {
+    xMax = d3.max(eduData, function(data) {
       return +data[dataColumnX] * 1.1;
     });
 
-    yMax = d3.max(hairData, function(data) {
-      return +data.num_hits * 1.1;
+    yMax = d3.max(eduData, function(data) {
+      return +data.Data_value * 1.1;
     });
   }
 
 
-  var currentAxisLabelX = "hair_length";
+  var currentAxisLabelX = "Sample_Size";
 
 
   findMinAndMax(currentAxisLabelX);
@@ -78,38 +80,38 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
     .offset([80, -60])
 
     .html(function(data) {
-      var bandName = data.rockband;
-      var numHits = +data.num_hits;
-      var bandInfo = +data[currentAxisLabelX];
-      var bandString;
+      var locName = data.Locationdesc;
+      var Datavalue = +data.Data_value;
+      var eduInfo = +data[currentAxisLabelX];
+      var eduString;
 
-      if (currentAxisLabelX === "hair_length") {
-        bandString = "Hair length: ";
+      if (currentAxisLabelX === "Sample_Size") {
+        eduString = "Sample Size: ";
       }
       else {
-        bandString = "Number of albums: ";
+        eduString = "Numbers of Display: ";
       }
-      return bandName +
+      return locName +
         "<br>" +
-        bandString +
-        bandInfo +
-        "<br> Hits: " +
-        numHits;
+        eduString +
+        eduInfo +
+        "<br> Values: " +
+        Datavalue;
     });
 
-  // Create tooltip
+
   chart.call(toolTip);
 
   chart
     .selectAll("circle")
-    .data(hairData)
+    .data(eduData)
     .enter()
     .append("circle")
     .attr("cx", function(data, index) {
       return xLinearScale(+data[currentAxisLabelX]);
     })
     .attr("cy", function(data, index) {
-      return yLinearScale(data.num_hits);
+      return yLinearScale(data.Data_value);
     })
     .attr("r", "15")
     .attr("fill", "#E75480")
@@ -141,8 +143,8 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
     .attr("x", 0 - height / 2)
     .attr("dy", "1em")
     .attr("class", "axis-text")
-    .attr("data-axis-name", "num_hits")
-    .text("Number of Billboard 500 Hits");
+    .attr("data-axis-name", "Data_value")
+    .text("Number of Data value");
 
 
   chart
@@ -153,8 +155,8 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
     )
 
     .attr("class", "axis-text active")
-    .attr("data-axis-name", "hair_length")
-    .text("Hair Metal Band Hair Length (inches)");
+    .attr("data-axis-name", "Sample_Size")
+    .text("Sample Size of the Dataset");
 
   chart
     .append("text")
@@ -164,8 +166,10 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
     )
 
     .attr("class", "axis-text inactive")
-    .attr("data-axis-name", "num_albums")
-    .text("# of Albums Released");
+    .attr("data-axis-name", "Display_order")
+    .text("Display Order of Dataset Values");
+
+
 
   function labelChange(clickedAxis) {
     d3
@@ -184,8 +188,12 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
 
     var isClickedSelectionInactive = clickedSelection.classed("inactive");
 
+
+
     var clickedAxis = clickedSelection.attr("data-axis-name");
     console.log("current axis: ", clickedAxis);
+
+
 
     if (isClickedSelectionInactive) {
 
@@ -198,9 +206,10 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
       svg
         .select(".x-axis")
         .transition()
-
+        // .ease(d3.easeElastic)
         .duration(1800)
         .call(bottomAxis);
+
 
       d3.selectAll("circle").each(function() {
         d3
@@ -212,7 +221,6 @@ d3.csv("ACS_14_1YR_S0102.csv", function(err, hairData) {
           })
           .duration(1800);
       });
-
 
       labelChange(clickedSelection);
     }
